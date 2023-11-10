@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Firebase Authentication Example</title>
+</head>
+<body>
+    <h1>Login or Register</h1>
+    
+    <!-- Login Form -->
+    <div id="login-form">
+        <h2>Login</h2>
+        <input type="email" id="login-email" placeholder="Email">
+        <input type="password" id="login-password" placeholder="Password">
+        <button id="login-button">Login</button>
+    </div>
+
+    <!-- Registration Form -->
+    <div id="register-form">
+        <h2>Register</h2>
+        <input type="email" id="register-email" placeholder="Email">
+        <input type="password" id="register-password" placeholder="Password">
+		<h1>what is your budget?</h1>
+        <input type="number" id="register-budget" placeholder="Budget">
+        <button id="register-button">Register</button>
+    </div>
+
+    <p id="login-status"></p>
+</body>
+<script type="module">
+    // Import the necessary Firebase modules
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-auth.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.5.2/firebase-firestore.js"; // Import Firestore modules
+
+    // Your Firebase configuration
+const firebaseConfig = {
+  apiKey: "AIzaSyAsJ5wM9Fy_4u0mwaAs2eoovub5wJfKAqQ",
+  authDomain: "authentication-class-f01dc.firebaseapp.com",
+  databaseURL: "https://authentication-class-f01dc-default-rtdb.firebaseio.com",
+  projectId: "authentication-class-f01dc",
+  storageBucket: "authentication-class-f01dc.appspot.com",
+  messagingSenderId: "556307104029",
+  appId: "1:556307104029:web:9992a103f7e557f731a1f4",
+  measurementId: "G-2YK72L9LQC"
+};
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore(); // Get Firestore instance
+
+    // Get DOM elements
+    const registerEmailInput = document.getElementById("register-email");
+    const registerPasswordInput = document.getElementById("register-password");
+    const registerBudgetInput = document.getElementById("register-budget");
+    const registerButton = document.getElementById("register-button");
+    const loginStatus = document.getElementById("login-status");
+
+    // Function to handle user registration
+    registerButton.addEventListener("click", () => {
+        const email = registerEmailInput.value;
+        const password = registerPasswordInput.value;
+        const budget = parseFloat(registerBudgetInput.value); // Parse the budget as a float
+
+        createUserWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                const user = userCredential.user;
+                const userId = user.uid;
+
+                // Store the user's budget in Firestore
+                const budgetData = {
+                    budget: budget
+                };
+
+                addDoc(collection(db, "Users"), {
+                    uid: userId,
+                    ...budgetData
+                })
+                    .then(() => {
+                        loginStatus.textContent = "Registration successful";
+                    })
+                    .catch((error) => {
+                        const errorCode = error.code;
+                        const errorMessage = error.message;
+                        loginStatus.textContent = `Registration error: ${errorCode} - ${errorMessage}`;
+                    });
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+                loginStatus.textContent = `Registration error: ${errorCode} - ${errorMessage}`;
+            });
+    });
+</script>
+</html>
